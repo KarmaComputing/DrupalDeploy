@@ -14,7 +14,7 @@ This script is only tested on Ubuntu, it won't work  on Windows (os.system calls
 ## Install mysql & apache2 first 
 Note, you probably already have this if you've been working on a Drupal site on your localhost...
 
-sudo apt-get install mysql-server apache2
+sudo apt-get install mysql-server apache2, php5, php5-gd,php5-mysql
 
 Note your mysql admin username & pass during mysql install, you'll need this when using DrupalDeploy.
 
