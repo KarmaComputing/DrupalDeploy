@@ -161,6 +161,16 @@ os.system("sudo chmod 550 " + drupal_path + "sites/default/settings.php")
 os.system("sudo chown www-data " + drupal_path + "sites/default/settings.php")
 os.system("sudo chgrp www-data " + drupal_path + "sites/default/settings.php")
 
+############################################
+############ Drupal prep ##################
+# - modules folder group & permissions
+###########################################
+os.system("sudo chmod -R 775 " + drupal_path + "sites/all/modules")
+os.system("sudo chgrp -R www-data -R " + drupal_path + "sites/all/modules")
+
+######################
+### Finish message ####
+#######################
 
 print "#" * 80
 print 'Drupal database username: ' + drupal_db_user
@@ -177,4 +187,4 @@ os.system("sudo service apache2 reload")
 
 # Try to launch webbrowser
 import webbrowser
-webbrowser.open_new_tab("http://" + drupal_db_user + '.localhost/install.php')
+webbrowser.open_new("http://" + drupal_db_user + '.localhost/install.php')
