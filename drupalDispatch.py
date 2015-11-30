@@ -132,11 +132,41 @@ f_hosts.close()
 os.system("sudo service networking restart")
 
 
+##################################################
+########## Drupal config file ####################
+##################################################
+
+import fileinput
+for line in fileinput.FileInput(drupal_path + 'sites/default/default.settings.php', inplace=1):
+    database_cfg = "\
+    $databases['default']['default'] = array(\n\
+        'driver' => 'mysql',\n\
+        'database' => '" + drupal_db_user + "',\n\
+        'username' => '" + drupal_db_user + "',\n\
+        'password' => '" + drupal_db_pass + "',\n\
+        'host' => 'localhost',\n\
+        'prefix' => '',\n\
+    );\n"
+    line = line.replace('$databases = array();',database_cfg)
+    if line:
+        print line,
+    else:
+        print line,
+
+#Copy default.settings to settings.php & set permissions etc
+os.system("sudo cp " + drupal_path + "sites/default/default.settings.php " + \
+         drupal_path + "sites/default/settings.php")
+
+os.system("sudo chmod 550 " + drupal_path + "sites/default/settings.php")
+os.system("sudo chown www-data " + drupal_path + "sites/default/settings.php")
+os.system("sudo chgrp www-data " + drupal_path + "sites/default/settings.php")
+
+
 print "#" * 80
 print 'Drupal database username: ' + drupal_db_user
 print 'Drupal database password: ' + drupal_db_pass
 print '  -- This install tries to launch the browser for you.'
-print 'If not, go to: http://' + drupal_db_user + '.localhost ' + \
+print 'If not, go to: http://' + drupal_db_user + '.localhost/install.php ' + \
         'on your browser to complete installation.'
 print "#" * 80
 
@@ -147,4 +177,4 @@ os.system("sudo service apache2 reload")
 
 # Try to launch webbrowser
 import webbrowser
-webbrowser.open_new_tab("http://" + drupal_db_user + '.localhost')
+webbrowser.open_new_tab("http://" + drupal_db_user + '.localhost/install.php')
