@@ -168,6 +168,9 @@ os.system("sudo chgrp www-data " + drupal_path + "sites/default/settings.php")
 os.system("sudo chmod -R 775 " + drupal_path + "sites/all/modules")
 os.system("sudo chgrp -R www-data -R " + drupal_path + "sites/all/modules")
 
+os.system("sudo mkdir " + drupal_path + "sites/default/files")
+os.system("sudo chgrp -R www-data -R " + drupal_path + "sites/default/files")
+
 #Sane permissions for files directory
 os.system("sudo chmod -R 775 " + drupal_path + "sites/default/files")
 
