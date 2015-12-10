@@ -1,4 +1,4 @@
-# DrupalDeploy
+# DrupalDispatch
 Deploy a Drupal 7 site in secconds on your localhost from command line, great for spinning up clean Drupal sites over &amp; over for test purposes. Make sure you have apache2 &amp; mysql server installed.
 
 It's a bit like a localhost alternative to simplytest.me except this sucks in comparison feature wise. 
