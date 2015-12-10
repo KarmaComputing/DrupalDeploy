@@ -36,7 +36,7 @@ class DrupalDispatch:
         f.write("GRANT ALL ON " + drupal_db_name + ".* TO " + "'" + \
                 drupal_db_user + "'@'localhost';\n") 
         f.close()
-        os.system("mysql -u demo --password=password < /tmp/createUser.sql")
+        os.system("mysql -u root --password=uZ2}rC@eAbh2vXxw < /tmp/createUser.sql")
 
         # Create website directory
         #   Get permissions right
@@ -71,7 +71,7 @@ class DrupalDispatch:
         #      - This makes <sitename>.localhost work!
         ###############################################
 
-        server_name = drupal_db_user + '.honestsme.com'
+        server_name = drupal_db_user + '.honestsme.co.uk'
         document_root = drupal_path
 
         f_VirtualHostConf = open('/etc/apache2/sites-available/' + drupal_db_user \
@@ -92,7 +92,7 @@ class DrupalDispatch:
 
         #Add [drupal_db_user].localhost to hosts file
         f_hosts = open('/etc/hosts','a')
-        f_hosts.write('127.0.0.1 ' + drupal_db_user + '.honestsme.com\n')
+        f_hosts.write('127.0.0.1 ' + drupal_db_user + '.honestsme.co.uk\n')
         f_hosts.close()
 
         # Restart networking service to catch hosts file change
