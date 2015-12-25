@@ -8,7 +8,7 @@ import pwd,grp
 
 class DrupalDispatch:
 
-    def buildWebsite(self, name):
+    def buildWebsite(self, siteName):
 
         #########################################
         ###### Database Creation ###############
@@ -23,7 +23,7 @@ class DrupalDispatch:
         drupal_db_pass = 'drpl_db_pass_' + ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(5)])
 
         #Create mysql sql script which createss user & database for new drupal site
-        f = open('/tmp/createUser.sql','w')
+        f = open('createUser.sql','w')
 
         #Write create user SQL statement to file
         f.write("CREATE USER '" + drupal_db_user + \
@@ -36,7 +36,7 @@ class DrupalDispatch:
         f.write("GRANT ALL ON " + drupal_db_name + ".* TO " + "'" + \
                 drupal_db_user + "'@'localhost';\n") 
         f.close()
-        os.system("mysql -u root --password=uZ2}rC@eAbh2vXxw < /tmp/createUser.sql")
+        os.system("mysql -u root --password=uZ2}rC@eAbh2vXxw < createUser.sql")
 
         # Create website directory
         #   Get permissions right
@@ -47,21 +47,22 @@ class DrupalDispatch:
         os.mkdir(drupal_path, 775) # Create website directory 
         os.chown(drupal_path, uid, gid) # Set owner to www-data
         os.chmod(drupal_path,775)
+	os.system("chmod -R 775 " + drupal_path)
 
         # Extract Drupal tar archive into drupal_path
-        os.system("sudo tar xf " + os.getcwd() + '/drupal-7.41.tar.gz')
+        os.system("tar xf /var/www/drupal-7.41.tar.gz -C /var/www/")
 
         # Move download into drupal_path web directory
         drupal_path = '/var/www/' + drupal_db_user + '/'
-        os.system("sudo mv " + os.getcwd() + '/drupal-7.41/ ' + drupal_path)
-        print "Move command: " + "sudo mv " + os.getcwd() + '/drupal-7.41/ ' + drupal_path
+        os.system("mv /var/www/drupal-7.41/ " + drupal_path)
+        print "Move command: " + "mv /var/www/drupal-7.41/ " + drupal_path
         print "Moved Drupal to " + drupal_path
 
         #Move everything up one directory 
-        os.system("sudo mv " + drupal_path + "drupal-7.41/* " + drupal_path)
-        os.system("sudo mv " + drupal_path + "drupal-7.41/.htaccess " + drupal_path)
-        os.system("sudo mv " + drupal_path + "drupal-7.41/.gitignore " + drupal_path)
-        os.system("sudo rm -R " + drupal_path + 'drupal-7.41')
+        os.system("mv " + drupal_path + "drupal-7.41/* " + drupal_path)
+        os.system("mv " + drupal_path + "drupal-7.41/.htaccess " + drupal_path)
+        os.system("mv " + drupal_path + "drupal-7.41/.gitignore " + drupal_path)
+        os.system("rm -R " + drupal_path + 'drupal-7.41')
 
         ###############################################
         #######  Apache configuration #################
@@ -71,7 +72,7 @@ class DrupalDispatch:
         #      - This makes <sitename>.localhost work!
         ###############################################
 
-        server_name = drupal_db_user + '.honestsme.co.uk'
+        server_name = siteName + '.honestsme.co.uk'
         document_root = drupal_path
 
         f_VirtualHostConf = open('/etc/apache2/sites-available/' + drupal_db_user \
@@ -83,20 +84,21 @@ class DrupalDispatch:
         f_VirtualHostConf.write("</VirtualHost>" + "\n")
 
         os.chown(drupal_path, uid, gid) # Set owner to www-data
-        os.system("sudo chmod -R 775 " + drupal_path)
-        os.system("sudo chown -R www-data " + drupal_path)
-        os.system("sudo chown -R www-data " + drupal_path + ".htaccess")
-
+        os.system("chmod -R 775 " + drupal_path)
+        os.system("chown -R www-data " + drupal_path)
+        os.system("chown -R www-data " + drupal_path + ".htaccess")
+	print 'Closing f_VirtualHostConf file'
+	f_VirtualHostConf.close()
         # Enable the website's config
-        os.system("sudo a2ensite " + drupal_db_user)
+        os.system("a2ensite " + drupal_db_user)
 
         #Add [drupal_db_user].localhost to hosts file
-        f_hosts = open('/etc/hosts','a')
-        f_hosts.write('127.0.0.1 ' + drupal_db_user + '.honestsme.co.uk\n')
-        f_hosts.close()
+        #f_hosts = open('/etc/hosts','a')
+        #f_hosts.write('127.0.0.1 ' + siteName + '.honestsme.co.uk\n')
+        #f_hosts.close()
 
         # Restart networking service to catch hosts file change
-        os.system("sudo service networking restart")
+        #os.system("service networking restart")
 
 
         ##################################################
@@ -121,25 +123,25 @@ class DrupalDispatch:
                 print line,
 
         #Copy default.settings to settings.php & set permissions etc
-        os.system("sudo cp " + drupal_path + "sites/default/default.settings.php " + \
+        os.system("cp " + drupal_path + "sites/default/default.settings.php " + \
                  drupal_path + "sites/default/settings.php")
 
-        os.system("sudo chmod 550 " + drupal_path + "sites/default/settings.php")
-        os.system("sudo chown www-data " + drupal_path + "sites/default/settings.php")
-        os.system("sudo chgrp www-data " + drupal_path + "sites/default/settings.php")
+        os.system("chmod 550 " + drupal_path + "sites/default/settings.php")
+        os.system("chown www-data " + drupal_path + "sites/default/settings.php")
+        os.system("chgrp www-data " + drupal_path + "sites/default/settings.php")
 
         ############################################
         ############ Drupal prep ##################
         # - modules folder group & permissions
         ###########################################
-        os.system("sudo chmod -R 775 " + drupal_path + "sites/all/modules")
-        os.system("sudo chgrp -R www-data -R " + drupal_path + "sites/all/modules")
+        os.system("chmod -R 775 " + drupal_path + "sites/all/modules")
+        os.system("chgrp -R www-data -R " + drupal_path + "sites/all/modules")
 
-        os.system("sudo mkdir " + drupal_path + "sites/default/files")
-        os.system("sudo chgrp -R www-data -R " + drupal_path + "sites/default/files")
+        os.system("mkdir " + drupal_path + "sites/default/files")
+        os.system("chgrp -R www-data -R " + drupal_path + "sites/default/files")
 
         #Sane permissions for files directory
-        os.system("sudo chmod -R 775 " + drupal_path + "sites/default/files")
+        os.system("chmod -R 775 " + drupal_path + "sites/default/files")
 
         ######################
         ### Finish message ####
@@ -149,12 +151,12 @@ class DrupalDispatch:
         print 'Drupal database username: ' + drupal_db_user
         print 'Drupal database password: ' + drupal_db_pass
         print '  -- This install tries to launch the browser for you.'
-        print 'If not, go to: http://' + drupal_db_user + '.localhost/install.php ' + \
+        print 'If not, go to: http://' + siteName + '.honestsme.co.uk/install.php ' + \
                 'on your browser to complete installation.'
         print "#" * 80
 
         # Reload apache2 confiruation to include new website
-        os.system("sudo service apache2 reload")
+        os.system("sudo /etc/init.d/apache2 graceful")
 
         def downloadDrupal(self):
             ##########################################
