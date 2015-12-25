@@ -4,7 +4,7 @@ import sys
 import os 
 import shutil
 import getpass
-import pwd,grp
+import pwd,grp,json
 
 class DrupalDispatch:
 
@@ -15,6 +15,19 @@ class DrupalDispatch:
         # - Creates mysql user
         # - Create database for new Drupal site
         ########################################
+
+	#Get settings from outside root directory
+        # To create settings file, use the example below,
+	# and store it outside your webroot
+	# Create python object from json. 
+	# Settings file format should be valid json and include the following
+        #{
+        #    "mysql_username":"your-mysql-username",
+        #    "mysql_pass":"your-mysql-password"
+        #}
+	fp = open('../settings.json')
+	settings = json.load(fp)
+        
         #Create new Drupal database username
         drupal_db_user = 'drpl_user' + ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(5)])
 
@@ -36,7 +49,7 @@ class DrupalDispatch:
         f.write("GRANT ALL ON " + drupal_db_name + ".* TO " + "'" + \
                 drupal_db_user + "'@'localhost';\n") 
         f.close()
-        os.system("mysql -u root --password=uZ2}rC@eAbh2vXxw < createUser.sql")
+        os.system("mysql -u " + settings['mysql_username'] + " --password=" + settings['mysql_pass'] + " < createUser.sql")
 
         # Create website directory
         #   Get permissions right
