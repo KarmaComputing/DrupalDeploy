@@ -8,8 +8,7 @@ import pwd,grp,json
 
 class DrupalDispatch:
 
-    def buildWebsite(self, siteName):
-
+    def getSettings(self):
         #########################################
         ###### Database Creation ###############
         # - Creates mysql user
@@ -25,13 +24,29 @@ class DrupalDispatch:
         #    "mysql_username":"your-mysql-username",
         #    "mysql_pass":"your-mysql-password"
         #}
-	try: 
-		fp = open('../settings.json')
-	except IOError:
-		exit("Exiting because could not open settings.json")
 
-	settings = json.load(fp)
-        
+	#If manually running script, get settings from stdin
+	if __name__ == "__main__":
+		settings = {"mysql_user":'',"mysql_pass":''}
+		settings['mysql_username'] = raw_input("Enter your mysql admin username (e.g. root):")
+		settings['mysql_pass'] = getpass.getpass("Enter your mysql admin password:")
+		self.settings = settings
+	else: #Read settings from settings.json from outside webroot
+		try: 
+			fp = open('../settings.json')
+		except IOError:
+			exit("Exiting because could not open settings.json")
+
+		self.settings = json.load(fp)
+
+    def buildWebsite(self, siteName):
+
+	#Get settings if not already set (this may happen from stdin for example)
+	try:
+		self.settings #If not defined, get settings
+	except NameError:    
+		getSettings() 
+
         #Create new Drupal database username
         drupal_db_user = 'drpl_user' + ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(5)])
 
@@ -53,7 +68,7 @@ class DrupalDispatch:
         f.write("GRANT ALL ON " + drupal_db_name + ".* TO " + "'" + \
                 drupal_db_user + "'@'localhost';\n") 
         f.close()
-        os.system("mysql -u " + settings['mysql_username'] + " --password=" + settings['mysql_pass'] + " < createUser.sql")
+        os.system("mysql -u " + self.settings['mysql_username'] + " --password=" + self.settings['mysql_pass'] + " < createUser.sql")
 
         # Create website directory
         #   Get permissions right
@@ -214,9 +229,6 @@ class DrupalDispatch:
             f.close()
 
     def toMigrate(self):
-        mysql_user = raw_input("Enter your mysql admin username (e.g. root):")
-
-        mysql_pass = getpass.getpass("Enter your mysql admin password:")
 
 
         #TODO remove /tmp/createuser.sql
@@ -224,3 +236,10 @@ class DrupalDispatch:
         # Try to launch webbrowser
         import webbrowser
         webbrowser.open_new("http://" + drupal_db_user + '.localhost/install.php')
+
+if __name__ == "__main__":
+	builder = DrupalDispatch()
+	sitename = raw_input("Enter desired site subdomain. e.g. enter 'mysite' for mysite.yourdomain.com:")
+	builder.getSettings()
+	#Build site
+        builder.buildWebsite(sitename)
