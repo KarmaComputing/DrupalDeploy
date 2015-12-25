@@ -25,7 +25,11 @@ class DrupalDispatch:
         #    "mysql_username":"your-mysql-username",
         #    "mysql_pass":"your-mysql-password"
         #}
-	fp = open('../settings.json')
+	try: 
+		fp = open('../settings.json')
+	except IOError:
+		exit("Exiting because could not open settings.json")
+
 	settings = json.load(fp)
         
         #Create new Drupal database username
