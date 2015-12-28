@@ -22,11 +22,6 @@ my_logger.critical('this is critical')
 class DrupalDispatch:
 
     def getSettings(self):
-	try:
-		fp = open('/var/www/websiteBuilder/websiteMaker/DrupalDispatch/test.txt')
-	except IOError:
-		print "Unexpected error:", sys.exc_info()[0]
-		exit("Could not open test.txt")
         #########################################
         ###### Database Creation ###############
         # - Creates mysql user
@@ -52,9 +47,9 @@ class DrupalDispatch:
 	else: #Read settings from settings.json from outside webroot
     
 		try: 
-			fp = open('/var/www/websiteBuilder/websiteMaker/settings.json')
+			fp = open('/var/www/websiteBuilder/DrupalDispatch/settings.json')
 		except IOError:
-			exit("Exiting because could not open settings.json #########################################################")
+			exit("Exiting from DrupalDispatch.py because could not open settings.json ##############################")
 
 		self.settings = json.load(fp)
 
@@ -103,14 +98,16 @@ class DrupalDispatch:
 	os.system("chmod -R 775 " + drupal_path)
 
         # Extract Drupal tar archive into drupal_path
-        os.system("tar xf /var/www/drupal-7.41.tar.gz -C /var/www/")
+        os.system("tar xf /var/www/websiteBuilder/drupal-7.41.tar.gz -C /var/www/websiteBuilder")
 
         # Move download into drupal_path web directory
         drupal_path = '/var/www/' + drupal_db_user + '/'
-        os.system("mv /var/www/drupal-7.41/ " + drupal_path)
+        os.system("mv /var/www/websiteBuilder/drupal-7.41/ " + drupal_path)
 
-        print "Move command: " + "mv /var/www/drupal-7.41/ " + drupal_path
+        print "Move command: " + "mv /var/www/websiteBuilder/drupal-7.41/ " + drupal_path
         print "Moved Drupal to " + drupal_path
+
+	my_logger.critical('Moved Drupal')
 
         #Move everything up one directory 
         os.system("mv " + drupal_path + "drupal-7.41/* " + drupal_path)
@@ -118,6 +115,7 @@ class DrupalDispatch:
         os.system("mv " + drupal_path + "drupal-7.41/.gitignore " + drupal_path)
         os.system("rm -R " + drupal_path + 'drupal-7.41')
 
+	my_logger.critical('Moved Drupal up one directory')
         ###############################################
         #######  Apache configuration #################
         # - Adds site to apache's /etc/apache/sites-available
@@ -131,6 +129,8 @@ class DrupalDispatch:
 
         f_VirtualHostConf = open('/etc/apache2/sites-available/' + drupal_db_user \
                                  + '.conf', 'w')
+
+	my_logger.critical('Opened new Apache VirtualHost config')
 
         f_VirtualHostConf.write("<VirtualHost *:80>\n")
         f_VirtualHostConf.write("ServerName " + server_name + "\n")
