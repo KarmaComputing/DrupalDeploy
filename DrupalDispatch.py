@@ -6,9 +6,27 @@ import shutil
 import getpass
 import pwd,grp,json
 
+import logging
+import logging.handlers
+
+my_logger = logging.getLogger('MyLogger')
+my_logger.setLevel(logging.DEBUG)
+
+handler = logging.handlers.SysLogHandler(address = '/dev/log')
+
+my_logger.addHandler(handler)
+
+my_logger.debug('this is debug')
+my_logger.critical('this is critical')
+
 class DrupalDispatch:
 
     def getSettings(self):
+	try:
+		fp = open('/var/www/websiteBuilder/websiteMaker/DrupalDispatch/test.txt')
+	except IOError:
+		print "Unexpected error:", sys.exc_info()[0]
+		exit("Could not open test.txt")
         #########################################
         ###### Database Creation ###############
         # - Creates mysql user
@@ -32,22 +50,24 @@ class DrupalDispatch:
 		settings['mysql_pass'] = getpass.getpass("Enter your mysql admin password:")
 		self.settings = settings
 	else: #Read settings from settings.json from outside webroot
+		print("Current directory is: ")
+    
 		try: 
-			fp = open('../settings.json')
+			fp = open('/var/www/websiteBuilder/websiteMaker/settings.json')
 		except IOError:
-			exit("Exiting because could not open settings.json")
+			exit("Exiting because could not open settings.json #########################################################")
 
 		self.settings = json.load(fp)
 
     def buildWebsite(self, siteName):
 
 	#Get settings if not already set (this may happen from stdin for example)
-	try:
-		self.settings #If not defined, get settings
-	except NameError:    
-		getSettings() 
-
-        #Create new Drupal database username
+	#try:
+	#	self.settings #If not defined, get settings
+	#except NameError:    
+	self.getSettings() 
+        
+	#Create new Drupal database username
         drupal_db_user = 'drpl_user' + ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(5)])
 
         drupal_db_name = drupal_db_user
@@ -56,6 +76,7 @@ class DrupalDispatch:
 
         #Create mysql sql script which createss user & database for new drupal site
         f = open('createUser.sql','w')
+
 
         #Write create user SQL statement to file
         f.write("CREATE USER '" + drupal_db_user + \
@@ -77,7 +98,8 @@ class DrupalDispatch:
         gid = grp.getgrnam("www-data").gr_gid
         drupal_path = '/var/www/' + drupal_db_user + '/'
         os.mkdir(drupal_path, 775) # Create website directory 
-        os.chown(drupal_path, uid, gid) # Set owner to www-data
+
+        #os.chown(drupal_path, uid, gid) # Set owner to www-data
         os.chmod(drupal_path,775)
 	os.system("chmod -R 775 " + drupal_path)
 
@@ -87,6 +109,7 @@ class DrupalDispatch:
         # Move download into drupal_path web directory
         drupal_path = '/var/www/' + drupal_db_user + '/'
         os.system("mv /var/www/drupal-7.41/ " + drupal_path)
+
         print "Move command: " + "mv /var/www/drupal-7.41/ " + drupal_path
         print "Moved Drupal to " + drupal_path
 
@@ -115,15 +138,15 @@ class DrupalDispatch:
         f_VirtualHostConf.write("DocumentRoot " + document_root + "\n")
         f_VirtualHostConf.write("</VirtualHost>" + "\n")
 
-        os.chown(drupal_path, uid, gid) # Set owner to www-data
-        os.system("chmod -R 775 " + drupal_path)
-        os.system("chown -R www-data " + drupal_path)
-        os.system("chown -R www-data " + drupal_path + ".htaccess")
+        #os.chown(drupal_path, uid, gid) # Set owner to www-data
+        #os.system("chmod -R 775 " + drupal_path)
+        #os.system("chown -R www-data " + drupal_path)
+        #os.system("chown -R www-data " + drupal_path + ".htaccess")
 	print 'Closing f_VirtualHostConf file'
 	f_VirtualHostConf.close()
         # Enable the website's config
         os.system("a2ensite " + drupal_db_user)
-
+	
         #Add [drupal_db_user].localhost to hosts file
         #f_hosts = open('/etc/hosts','a')
         #f_hosts.write('127.0.0.1 ' + siteName + '.honestsme.co.uk\n')
@@ -159,7 +182,9 @@ class DrupalDispatch:
                  drupal_path + "sites/default/settings.php")
 
         os.system("chmod 550 " + drupal_path + "sites/default/settings.php")
+
         os.system("chown www-data " + drupal_path + "sites/default/settings.php")
+
         os.system("chgrp www-data " + drupal_path + "sites/default/settings.php")
 
         ############################################
@@ -175,6 +200,7 @@ class DrupalDispatch:
         #Sane permissions for files directory
         os.system("chmod -R 775 " + drupal_path + "sites/default/files")
 
+
         ######################
         ### Finish message ####
         #######################
@@ -189,7 +215,7 @@ class DrupalDispatch:
 
         # Reload apache2 confiruation to include new website
         os.system("sudo /etc/init.d/apache2 graceful")
-
+	
         def downloadDrupal(self):
             ##########################################
             ########## Drupal Download #############
