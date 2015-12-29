@@ -50,7 +50,6 @@ class DrupalDispatch:
 		settings['mysql_pass'] = getpass.getpass("Enter your mysql admin password:")
 		self.settings = settings
 	else: #Read settings from settings.json from outside webroot
-		print("Current directory is: ")
     
 		try: 
 			fp = open('/var/www/websiteBuilder/websiteMaker/settings.json')
