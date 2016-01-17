@@ -32,8 +32,8 @@ class DrupalDispatch:
 		settings['mysql_pass'] = getpass.getpass("Enter your mysql admin password:")
 		self.settings = settings
 	else: #Read settings from settings.json from outside webroot
-		try: 
-			fp = open('../settings.json')
+		try:
+			fp = open('/home/chris/settings.json')
 		except IOError:
 			exit("Exiting because could not open settings.json")
 
@@ -41,12 +41,15 @@ class DrupalDispatch:
 
     def buildWebsite(self, siteName):
 
+	#Check site dosent alreay exist
+	if os.system('findsite ' + siteName) == 0:
+		exit("Sitenme already exists!")
+
 	#Get settings if not already set (this may happen from stdin for example)
 	try:
 		self.settings #If not defined, get settings
-	except NameError:    
-		getSettings() 
-
+	except:    
+		self.getSettings() 
         #Create new Drupal database username
         drupal_db_user = 'drpl_user' + ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(5)])
 
