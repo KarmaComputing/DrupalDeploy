@@ -127,14 +127,6 @@ class DrupalDispatch:
         # Enable the website's config
         os.system("a2ensite " + drupal_db_user)
 
-        #Add [drupal_db_user].localhost to hosts file
-        #f_hosts = open('/etc/hosts','a')
-        #f_hosts.write('127.0.0.1 ' + siteName + '.honestsme.co.uk\n')
-        #f_hosts.close()
-
-        # Restart networking service to catch hosts file change
-        #os.system("service networking restart")
-
 
         ##################################################
         ########## Drupal config file ####################
