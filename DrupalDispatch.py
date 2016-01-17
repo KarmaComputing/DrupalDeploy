@@ -20,10 +20,20 @@ class DrupalDispatch:
 	# and store it outside your webroot
 	# Create python object from json. 
 	# Settings file format should be valid json and include the following
+	# JSON object:
         #{
         #    "mysql_username":"your-mysql-username",
-        #    "mysql_pass":"your-mysql-password"
+        #    "mysql_pass":"your-mysql-password",
+	#    "domain":"example.com"
         #}
+	#
+	# Mysql username & password is self explanatory,
+	# 'domain' is appended to the user requested site names. 
+        # for example, a user requiests a website called 'samscakes'
+	# DrupalDispatch takes this and appends the domain to the 
+	# requested subdomain (siteName) resulting in:
+	# samscakes.example.com
+
 
 	#If manually running script, get settings from stdin
 	if __name__ == "__main__":
@@ -33,7 +43,7 @@ class DrupalDispatch:
 		self.settings = settings
 	else: #Read settings from settings.json from outside webroot
 		try:
-			fp = open('/home/chris/settings.json')
+			fp = open('/home/settings.json')
 		except IOError:
 			exit("Exiting because could not open settings.json")
 
@@ -107,7 +117,9 @@ class DrupalDispatch:
         #      - This makes <sitename>.localhost work!
         ###############################################
 
-        server_name = siteName + '.honestsme.co.uk'
+	#Append domain to user requested subdomain
+	# E.g. siteName of 'acecorp' becomes acecorp.example.co.uk
+        server_name = siteName + '.' + self.settings['domain'] 
         document_root = drupal_path
 
         f_VirtualHostConf = open('/etc/apache2/sites-available/' + drupal_db_user \
@@ -178,7 +190,7 @@ class DrupalDispatch:
         print 'Drupal database username: ' + drupal_db_user
         print 'Drupal database password: ' + drupal_db_pass
         print '  -- This install tries to launch the browser for you.'
-        print 'If not, go to: http://' + siteName + '.honestsme.co.uk/install.php ' + \
+        print 'If not, go to: http://' + siteName + '.' + self.settings['domain'] + '/install.php ' + \
                 'on your browser to complete installation.'
         print "#" * 80
 
