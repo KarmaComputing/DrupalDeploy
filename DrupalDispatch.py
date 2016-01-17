@@ -40,6 +40,7 @@ class DrupalDispatch:
 		settings = {"mysql_user":'',"mysql_pass":''}
 		settings['mysql_username'] = raw_input("Enter your mysql admin username (e.g. root):")
 		settings['mysql_pass'] = getpass.getpass("Enter your mysql admin password:")
+		settings['domain'] = raw_input("Enter domain (e.g. example.com):")
 		self.settings = settings
 	else: #Read settings from settings.json from outside webroot
 		try:
