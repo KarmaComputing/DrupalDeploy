@@ -33,19 +33,29 @@ class DrupalDispatch:
 	# and store it outside your webroot
 	# Create python object from json. 
 	# Settings file format should be valid json and include the following
+	# JSON object:
         #{
         #    "mysql_username":"your-mysql-username",
-        #    "mysql_pass":"your-mysql-password"
+        #    "mysql_pass":"your-mysql-password",
+	#    "domain":"example.com"
         #}
+	#
+	# Mysql username & password is self explanatory,
+	# 'domain' is appended to the user requested site names. 
+        # for example, a user requiests a website called 'samscakes'
+	# DrupalDispatch takes this and appends the domain to the 
+	# requested subdomain (siteName) resulting in:
+	# samscakes.example.com
+
 
 	#If manually running script, get settings from stdin
 	if __name__ == "__main__":
 		settings = {"mysql_user":'',"mysql_pass":''}
 		settings['mysql_username'] = raw_input("Enter your mysql admin username (e.g. root):")
 		settings['mysql_pass'] = getpass.getpass("Enter your mysql admin password:")
+		settings['domain'] = raw_input("Enter domain (e.g. example.com):")
 		self.settings = settings
 	else: #Read settings from settings.json from outside webroot
-    
 		try:
 			#Get wsgi run user to form settings.json path
 			wsgiUsername = getpass.getuser()
@@ -58,13 +68,16 @@ class DrupalDispatch:
 
     def buildWebsite(self, siteName):
 
+	#Check site dosent alreay exist
+	if os.system('findsite ' + siteName) == 0:
+		exit("Sitenme already exists!")
+
 	#Get settings if not already set (this may happen from stdin for example)
-	#try:
-	#	self.settings #If not defined, get settings
-	#except NameError:    
-	self.getSettings() 
-        
-	#Create new Drupal database username
+	try:
+		self.settings #If not defined, get settings
+	except:    
+		self.getSettings() 
+        #Create new Drupal database username
         drupal_db_user = 'drpl_user' + ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(5)])
 
         drupal_db_name = drupal_db_user
@@ -127,7 +140,9 @@ class DrupalDispatch:
         #      - This makes <sitename>.localhost work!
         ###############################################
 
-        server_name = siteName + '.honestsme.co.uk'
+	#Append domain to user requested subdomain
+	# E.g. siteName of 'acecorp' becomes acecorp.example.co.uk
+        server_name = siteName + '.' + self.settings['domain'] 
         document_root = drupal_path
 
         f_VirtualHostConf = open('/etc/apache2/sites-available/' + drupal_db_user \
@@ -148,15 +163,6 @@ class DrupalDispatch:
 	f_VirtualHostConf.close()
         # Enable the website's config
         os.system("a2ensite " + drupal_db_user)
-	
-        #Add [drupal_db_user].localhost to hosts file
-        #f_hosts = open('/etc/hosts','a')
-        #f_hosts.write('127.0.0.1 ' + siteName + '.honestsme.co.uk\n')
-        #f_hosts.close()
-
-        # Restart networking service to catch hosts file change
-        #os.system("service networking restart")
-
 
         ##################################################
         ########## Drupal config file ####################
@@ -211,7 +217,7 @@ class DrupalDispatch:
         print 'Drupal database username: ' + drupal_db_user
         print 'Drupal database password: ' + drupal_db_pass
         print '  -- This install tries to launch the browser for you.'
-        print 'If not, go to: http://' + siteName + '.honestsme.co.uk/install.php ' + \
+        print 'If not, go to: http://' + siteName + '.' + self.settings['domain'] + '/install.php ' + \
                 'on your browser to complete installation.'
         print "#" * 80
 
