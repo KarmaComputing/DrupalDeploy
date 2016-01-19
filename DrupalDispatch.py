@@ -46,8 +46,11 @@ class DrupalDispatch:
 		self.settings = settings
 	else: #Read settings from settings.json from outside webroot
     
-		try: 
-			fp = open('/var/www/websiteBuilder/DrupalDispatch/settings.json')
+		try:
+			#Get wsgi run user to form settings.json path
+			wsgiUsername = getpass.getuser()
+			settingsPath = path = '/home/' + wsgiUsername + '/'
+			fp = open(settingsPath + 'settings.json')
 		except IOError:
 			exit("Exiting from DrupalDispatch.py because could not open settings.json ##############################")
 
