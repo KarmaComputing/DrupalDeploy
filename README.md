@@ -18,6 +18,17 @@ sudo apt-get install mysql-server apache2 php5 php5-gd php5-mysql
 
 Note your mysql admin username & pass during mysql install, you'll need this when using DrupalDeploy.
 
+#Configure it (not necessary if running script directly!) 
+If wanting to call this script from a wsgi application (like Flask for example)
+Create a settings.json in your /home/<yourusername> directory (script presumes your have configured apache run user acess to this file)
+
+The structure of the file must be:
+{
+    "mysql_username":"yourUsername",
+    "mysql_pass":"yourPassword",
+    "domain":"example.com"
+}
+
 
 #Run it
 sudo python drupalDispatch.py
