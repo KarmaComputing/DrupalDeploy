@@ -23,6 +23,7 @@ If wanting to call this script from a wsgi application (like Flask for example)
 Create a settings.json in your /home/<yourusername> directory (script presumes your have configured apache run user acess to this file)
 
 The structure of the file must be:
+
 {
     "mysql_username":"yourUsername",
     "mysql_pass":"yourPassword",
